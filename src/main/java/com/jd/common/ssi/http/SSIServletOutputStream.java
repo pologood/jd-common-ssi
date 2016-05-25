@@ -5,27 +5,31 @@ import com.jd.common.ssi.processor.SSIProcessor;
 import com.jd.common.ssi.processor.impl.SSIProcessorImpl;
 
 import javax.servlet.ServletOutputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 
 /**
  * 自定义输出流
  * Created by caozhifei on 2016/5/20.
  */
 public class SSIServletOutputStream extends ServletOutputStream {
-    private int initialSize;
-    private Writer writer;
+    private OutputStreamWriter writer;
     private SSIProcessor ssiProcessor;
 
-    public SSIServletOutputStream(int initialSize) {
-        this.initialSize = initialSize;
-        writer = new CharArrayWriter(initialSize);
-        ssiProcessor = new SSIProcessorImpl(new SSIFinderFactory());
+    public SSIServletOutputStream(String encoding,ServletOutputStream outputStream) {
+        try {
+            writer = new OutputStreamWriter(outputStream,encoding);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        ssiProcessor = new SSIProcessorImpl(encoding,new SSIFinderFactory());
     }
 
-    public SSIServletOutputStream(int initialSize, SSIProcessor ssiProcessor) {
-        this.initialSize = initialSize;
+    public SSIServletOutputStream(String encoding, SSIProcessor ssiProcessor,ServletOutputStream outputStream) {
+        try {
+            writer = new OutputStreamWriter(outputStream,encoding);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         this.ssiProcessor = ssiProcessor;
     }
 
@@ -43,5 +47,8 @@ public class SSIServletOutputStream extends ServletOutputStream {
     @Override
     public void flush() throws IOException {
         ssiProcessor.flush(writer);
+    }
+    public OutputStreamWriter getWriter(){
+        return this.writer;
     }
 }

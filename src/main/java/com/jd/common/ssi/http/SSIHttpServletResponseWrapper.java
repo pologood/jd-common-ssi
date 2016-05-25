@@ -4,6 +4,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -12,6 +13,7 @@ import java.io.UnsupportedEncodingException;
  * Created by caozhifei on 2016/5/20.
  */
 public class SSIHttpServletResponseWrapper extends HttpServletResponseWrapper {
+    private  SSIServletOutputStream servletOutputStream;
     private PrintWriter writer;
 
     /**
@@ -23,7 +25,11 @@ public class SSIHttpServletResponseWrapper extends HttpServletResponseWrapper {
     public SSIHttpServletResponseWrapper(HttpServletResponse response) {
         super(response);
         try {
-            writer = new SSIPrintWriter(super.getWriter());
+            String encoding = response.getCharacterEncoding();
+            this.servletOutputStream = new SSIServletOutputStream(encoding,response.getOutputStream());
+            OutputStreamWriter osw = new OutputStreamWriter(this.servletOutputStream, encoding);
+            this.writer = new PrintWriter(osw);
+            setCharacterEncoding(encoding);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,12 +41,18 @@ public class SSIHttpServletResponseWrapper extends HttpServletResponseWrapper {
     public PrintWriter getWriter() throws IOException {
         return this.writer;
     }
-
+    @Override
+    public ServletOutputStream getOutputStream() throws IOException {
+        return this.servletOutputStream;
+    }
     //重载父类获取flushBuffer的方法
     @Override
     public void flushBuffer() throws IOException {
-        if (writer != null) {
-            writer.flush();
+        if (this.writer != null) {
+            this.writer.flush();
+        }
+        if(this.servletOutputStream != null){
+            this.servletOutputStream.flush();
         }
 
     }

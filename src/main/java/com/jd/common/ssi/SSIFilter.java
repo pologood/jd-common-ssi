@@ -34,8 +34,9 @@ public class SSIFilter implements Filter {
 //            chain.doFilter(request, response);
 //            return;
 //        }
+        inRequest.setCharacterEncoding(encoding);
+        inResponse.setCharacterEncoding(encoding);
         SSIHttpServletResponseWrapper wrapper = new SSIHttpServletResponseWrapper(inResponse);
-        wrapper.setCharacterEncoding(encoding);
         chain.doFilter(inRequest, wrapper);
 //        if (isRefresh) {
 //            inResponse.setDateHeader("Last-Modified", System.currentTimeMillis());

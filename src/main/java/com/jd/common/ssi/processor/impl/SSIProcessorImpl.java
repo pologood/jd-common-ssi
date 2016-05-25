@@ -6,7 +6,9 @@ import com.jd.common.ssi.factory.CommonFactory;
 import com.jd.common.ssi.processor.SSIFinder;
 import com.jd.common.ssi.processor.SSIProcessor;
 
+import javax.servlet.ServletOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Map;
 
@@ -24,12 +26,16 @@ public class SSIProcessorImpl implements SSIProcessor {
      */
     private StringBuilder buffer;
 
-    public SSIProcessorImpl(CommonFactory factory) {
+    private String encoding;
+
+    public SSIProcessorImpl(String encoding,CommonFactory factory) {
+        this.encoding = encoding;
         this.factory = factory;
         buffer = new StringBuilder(bufferMaxLength);
     }
 
-    public SSIProcessorImpl(CommonFactory factory, int commandMaxLength) {
+    public SSIProcessorImpl(String encoding,CommonFactory factory, int commandMaxLength) {
+        this.encoding = encoding;
         this.factory = factory;
         this.bufferMaxLength = commandMaxLength;
         buffer = new StringBuilder(this.bufferMaxLength);
@@ -60,7 +66,7 @@ public class SSIProcessorImpl implements SSIProcessor {
 
         //超过缓冲区大小，还没有找到完整的ssi指令，直接清空缓冲区，重新开始查找新的指令
         if (buffer.length() > this.bufferMaxLength) {
-            writer.append(this.buffer);
+            writer.write(this.buffer.toString());
             buffer.setLength(0);
         }
     }
@@ -77,7 +83,7 @@ public class SSIProcessorImpl implements SSIProcessor {
             int prefixIndex = buffer.indexOf(CommandEnum.COMMAND_PREFIX.getDesc());
             if (prefixIndex < 0) {
                 //写入输出流并清空缓冲区
-                writer.append(this.buffer);
+                writer.write(this.buffer.toString());
                 buffer.setLength(0);
                 return true;
             }
@@ -103,7 +109,7 @@ public class SSIProcessorImpl implements SSIProcessor {
                 String commandStr = buffer.toString();
                 SSICommand ssiCommand = ssiFinder.findCommand(commandStr);
                 Map<String, String> map = ssiFinder.findPara(commandStr);
-                writer.append(ssiCommand.execute(map));
+                writer.write(ssiCommand.execute(map));
                 buffer.setLength(0);
             }
         }
@@ -117,7 +123,7 @@ public class SSIProcessorImpl implements SSIProcessor {
      */
     @Override
     public void flush(Writer writer) throws IOException {
-        writer.append(buffer);
+        writer.write(buffer.toString());
         buffer.setLength(0);
         writer.flush();
     }

@@ -1,6 +1,8 @@
 package com.jd.common.ssi.processor;
 
+import javax.servlet.ServletOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 
